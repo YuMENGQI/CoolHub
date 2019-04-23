@@ -1,0 +1,65 @@
+apply from: rootProject.file('cc-settings.gradle')
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
+android {
+    compileSdkVersion rootProject.ext.android["compileSdkVersion"]
+    buildToolsVersion rootProject.ext.android["buildToolsVersion"]
+    defaultConfig {
+        applicationId "com.m4coding.coolhub"
+        minSdkVersion rootProject.ext.android["minSdkVersion"]
+        targetSdkVersion rootProject.ext.android["targetSdkVersion"]
+        versionCode rootProject.ext.android["appVersionCode"]
+        versionName rootProject.ext.android["appVersionName"]
+
+        multiDexEnabled true  //开启MultiDex
+        vectorDrawables.useSupportLibrary = true
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+        }
+    }
+
+    apkNameModify(defaultConfig)
+}
+
+//修改apk名称
+def apkNameModify(def defaultConfig) {
+    android.applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def fileName = ""
+            if (variant.buildType.name == 'release') {
+                fileName = "CoolHub-${defaultConfig.versionName}.apk"
+            } else if (variant.buildType.name == 'debug') {
+                fileName = "CoolHub-debug-${defaultConfig.versionName}.apk"
+            }
+            outputFileName = fileName
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
+    implementation project(':base')
+    implementation project(':business_base')
+    addComponent "business_mainpage"
+    addComponent "business_login"
+    addComponent "business_search"
+    addComponent "business_start"
+    addComponent "api"
+
+    implementation rootProject.ext.dependencies["bugly-upgrade"]
+    implementation rootProject.ext.dependencies["bugly-nativecrashreport"]
+}
+
+apply from: rootProject.file('simulator-config.gradle')
+
+def signFile = rootProject.file('MyConfig/sign-config.gradle')
+if (signFile != null && signFile.exists()) {
+    apply from: rootProject.file('MyConfig/sign-config.gradle')
+}
